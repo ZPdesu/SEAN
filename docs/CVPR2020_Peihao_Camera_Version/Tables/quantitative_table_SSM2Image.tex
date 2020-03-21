@@ -1,0 +1,15 @@
+\centering
+\small
+\begin{tabular}{lccc|ccc|ccc|c} \toprule
+
+\multirow{2}{*}{Method}   & \multicolumn{3}{c|}{CelebAMask-HQ}  & \multicolumn{3}{c|}{CityScapes}  & \multicolumn{3}{c|}{ADE20K} & \Facades\\ \cmidrule{2-11}
+{}     & mIoU  & accu  & FID           & mIoU  & accu  & FID      & mIoU  & accu  & FID      & FID    \\ \midrule
+                       
+Ground Truth  &73.14    &94.38   &9.41         &66.21   &93.69   &32.34       &39.38   &78.76  &14.51         &14.40 \\  \midrule    
+Pix2PixHD~\cite{wang2018pix2pixHD}  &76.12    &95.76   &23.69         &50.35   & 92.09   &83.24       &22.78   &73.32  &43.0          &22.34 \\
+SPADE~\cite{park2019SPADE}  &\bf{77.01}   &\bf{95.93}   &22.43         &56.01    & 93.13   &60.51       &\bf{35.37}   &\bf 79.37  &34.65       &24.04 \\
+\bf{Ours} &75.69 &95.69 &\bf{17.66}   &\bf{57.88} &\bf{93.59} &\bf{50.38}     &34.59 &77.16 &\bf{24.84}  &\bf{19.82} \\
+\bottomrule
+
+\end{tabular}
+

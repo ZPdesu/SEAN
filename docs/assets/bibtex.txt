@@ -1,0 +1,8 @@
+@misc{zhu2019sean,
+    title={SEAN: Image Synthesis with Semantic Region-Adaptive Normalization},
+    author={Peihao Zhu and Rameen Abdal and Yipeng Qin and Peter Wonka},
+    year={2019},
+    eprint={1911.12861},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}

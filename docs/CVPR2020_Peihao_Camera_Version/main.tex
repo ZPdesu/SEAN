@@ -1,0 +1,401 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage{cvpr}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{mathtools}
+\usepackage{acronym}
+\usepackage{caption}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{multirow}
+
+%%%%%%%%%%%%%%%%%%%%MACROS%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% acronyms
+% \acrodef{SEAN}{Semantic (Region)-Adaptive Normalization}
+
+\acrodef{SPADE}{Spatially-Adaptive Normalization}
+\acrodef{AdaIN}{Adaptive Instance Normalization}
+\acrodef{LRN}{Local Response Normalization}
+\acrodef{BN}{Batch Normalization}
+\acrodef{IN}{Instance Normalization}
+\acrodef{LN}{Layer Normalization}
+\acrodef{GN}{Group Normalization}
+\acrodef{WN}{Weight Normalization}
+\acrodef{Conditional BN}{Conditional Batch Normalization}
+
+\acrodef{mIoU}{mean Intersection-over-Union}
+\acrodef{accu}{pixel accuracy}
+\acrodef{FID}{Fréchet Inception Distance}
+
+
+\def\facade{fa\c{c}ade\xspace}
+\def\facades{fa\c{c}ades\xspace}
+\def\Facade{Fa\c{c}ade\xspace}
+\def\Facades{Fa\c{c}ades\xspace}
+
+\newcommand{\todo}{{\textbf{\color{red}[TO-DO]\_}}}
+
+
+
+% Include other packages here, before hyperref.
+
+% If you comment hyperref and then uncomment it, you should delete
+% egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
+% run, let it finish, and you should be clear).
+\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+
+\cvprfinalcopy % *** Uncomment this line for the final submission
+
+\def\cvprPaperID{} % *** Enter the CVPR Paper ID here
+\def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
+
+% Pages are numbered in submission mode, and unnumbered in camera-ready
+\pagestyle{empty}
+
+\begin{document}
+
+%%%%%%%%% TITLE
+\title{SEAN: Image Synthesis with Semantic Region-Adaptive Normalization}
+
+\author{Peihao Zhu\textsuperscript{1} \quad Rameen Abdal\textsuperscript{1} \quad Yipeng Qin\textsuperscript{2} \quad Peter Wonka\textsuperscript{1} \\
+\\
+\textsuperscript{1}KAUST \quad \textsuperscript{2}Cardiff University
+}
+
+% \author{
+% Pei-Hao Zhu\\
+% KAUST\\
+% {\tt\small peihao.zhu@kaust.edu.sa}
+% % For a paper whose authors are all at the same institution,
+% % omit the following lines up until the closing ``}''.
+% % Additional authors and addresses can be added with ``\and'',
+% % just like the second author.
+% % To save space, use either the email address or home page, not both
+% \and
+% Rameen Abdal\\
+% KAUST\\
+% {\tt\small rameen.abdal@kaust.edu.sa}
+% \and
+% Yipeng Qin\\
+% Cardiff University\\
+% {\tt\small qiny16@cardiff.ac.uk}
+% \and
+% Peter Wonka\\
+% KAUST\\
+% {\tt\small pwonka@gmail.com}
+% }
+
+% \thispagestyle{empty}
+\twocolumn[{%
+\renewcommand\twocolumn[1][]{#1}%
+\maketitle
+\thispagestyle{empty}
+
+\begin{center}
+    \includegraphics[width=\linewidth]{Figures/Teaser3_extend.pdf}
+    % \fbox{\rule{0pt}{3in} \rule{0.9\linewidth}{0pt}}
+    \vspace*{-5mm}
+    \captionof{figure}{Face image editing controlled via style images and segmentation masks. a) source images. b) reconstruction of the source image; segmentation mask shown as small inset. c - f) four separate edits; we show the image that provides new style information on top and show the part of the segmentation mask that gets edited as small inset. The results of the successive edits are shown in row two and three. The four edits change hair, mouth and eyes, skin tone, and background, respectively.}
+    \label{fig:teaser}
+\end{center}%
+}]
+
+
+%%%%%%%%% ABSTRACT
+\begin{abstract}
+    We propose semantic region-adaptive normalization (SEAN), a simple but effective building block for Generative Adversarial Networks conditioned on segmentation masks that describe the semantic regions in the desired output image.
+    Using SEAN normalization, we can build a network architecture that can control the style of each semantic region individually, e.g., we can specify one style reference image per region. SEAN is better suited to encode, transfer, and synthesize style than the best previous method in terms of reconstruction quality, variability, and visual quality.
+    We evaluate SEAN on multiple datasets and report better quantitative metrics (e.g. FID, PSNR) than the current state of the art.
+    SEAN also pushes the frontier of interactive image editing. We can interactively edit images by changing segmentation masks or the style for any given region. We can also interpolate styles from two reference images per region. Demo:  \small{\url{https://youtu.be/0Vbj9xFgoUw}}.
+\end{abstract}
+
+
+\begin{figure*}[th]
+\centering
+\includegraphics[width=\linewidth]{Figures/ADE_editing2.pdf}
+\vspace*{-7mm}
+\caption{Editing sequence on the ADE20K dataset. (a) source image, (b) reconstruction of the source image, (c-f) various edits using style images shown in the top row. The regions affected by the edits are shown as small insets.}
+\label{fig:ADE editing}
+\end{figure*}
+
+
+%%%%%%%%% BODY TEXT
+\section{Introduction}
+
+In this paper we tackle the problem of synthetic image generation using conditional generative adversarial networks (cGANs). Specifically, we would like to control the layout of the generated image using a segmentation mask that has labels for each semantic region and ``add'' realistic styles to each region according to their labels . For example, a face generation application would use region labels like eyes, hair, nose, mouth, \etc~and a landscape painting application would use labels like water, forest, sky, clouds, \etc
+While multiple very good frameworks exist to tackle this problem~\cite{isola2016imagetoimage,chen2017photographic,qi2018semiparametric, wang2018pix2pixHD}, the currently best architecture is SPADE~\cite{park2019SPADE} (also called GauGAN). Therefore, we decided to use SPADE as starting point for our research. By analyzing the SPADE results, we found two shortcomings that we would like to improve upon in our work.
+
+
+First, SPADE uses only one style code to control the entire style of an image, which is not sufficient for high quality synthesis or detailed control.
+For example, it is easily possible that the segmentation mask of the desired output image contains a labeled region that is not present in the segmentation mask of the input style image. 
+In this case, the style of the missing region is undefined, which yields low quality results.
+Further, SPADE does not allow using a different style input image for each region in the segmentation mask. 
+Our first main idea is therefore to control the style of each region individually, \ie, our proposed architecture accepts one style image per region (or per region instance) as input.
+
+Second, we believe that inserting style information only in the beginning of a network is not a good architecture choice. Recent architectures~\cite{karras2018stylebased,liu2019fewshot,alharbi2019latent} have demonstrated that higher quality results can be obtained if style information is injected as normalization parameters in multiple layers in the network, e.g. using AdaIN~\cite{huang2017arbitrary}. However, none of these previous networks use style information to generate spatially varying normalization parameters.
+To alleviate this shortcoming, our second main idea is to design a normalization building block, called SEAN, that can use style input images to create spatially varying normalization parameters per semantic region. An important aspect of this work is that the spatially varying normalization parameters are dependent on the segmentation mask as well as the style input images.
+
+
+Empirically, we provide an extensive evaluation of our method on several challenging datasets: CelebAMask-HQ~\cite{CelebAMask-HQ,karras2017progressive,liu2015faceattributes}, 
+% the COCO-Stuff~\cite{caesar2016cocostuff,Lin_2014} (Maybe),
+CityScapes~\cite{Cordts2016Cityscapes}, ADE20K~\cite{zhou2017scene}, and our own \Facades dataset. 
+Quantitatively, we evaluate our work on a wide range of metrics including FID, PSNR, RMSE and segmentation performance; qualitatively, we show examples of synthesized images that can be evaluated by visual inspection. 
+Our experimental results demonstrate a large improvement over the current state-of-the-art methods. In summary, we introduce a new architecture building block \emph{SEAN} that has the following advantages:
+\begin{enumerate}
+  \item SEAN improves the quality of the synthesized images for conditional GANs. We compared to the state of the art methods SPADE and Pix2PixHD and achieve clear improvements in quantitative metrics (e.g. FID score) and visual inspection.
+  \item SEAN improves the per-region style encoding, so that reconstructed images can be made more similar to the input style images as measured by PSNR and visual inspection.
+  \item SEAN allows the user to select a different style input image for each semantic region. This enables image editing capabilities producing much higher quality and providing better control than the current state-of-the-art methods. Example image editing capabilities are interactive region by region style transfer and per-region style interpolation (See Figs.~\ref{fig:teaser}, \ref{fig:ADE editing}, and \ref{fig:style interpolation}).
+\end{enumerate}
+%-------------------------------------------------------------------------
+
+
+
+\section{Related Work}
+
+\vspace*{2mm}\noindent {\bf Generative Adversarial Networks.}
+Since their introduction in 2014, Generative Adversarial Networks (GANs)~\cite{goodfellow2014generative} have been successfully applied to various image synthesis tasks, \eg image inpainting~\cite{yu2018generative,demir2018patch}, image manipulation \cite{zhu2016generative,Bau:Ganpaint:2019,abdal2019image2stylegan} and texture synthesis~\cite{TextureSynthesis2016,slossberg2018high,Fr_hst_ck_2019}.
+With continuous improvements on GAN architecture~\cite{radford2015unsupervised,karras2018stylebased,park2019SPADE}, loss function~\cite{Mao_2017,arjovsky2017wasserstein} and regularization~\cite{gulrajani2017improved,miyato2018spectral,mescheder2018training}, the images synthesized by GANs are becoming more and more realistic.
+For example, the human face images generated by StyleGAN~\cite{karras2018stylebased} are of very high quality and are almost indistinguishable from photographs by untrained viewers.
+A traditional GAN uses noise vectors as the input and thus provides little user control. This motivates the development of conditional GANs (cGANs)~\cite{mirza2014conditional} where users can control the synthesis by feeding the generator with conditioning information.
+Examples include class labels \cite{miyato2018cgans,mescheder2018training,brock2018large}, text~\cite{reed2016generative,hong2018inferring,xu2018attngan} and images~\cite{isola2016imagetoimage,zhu2017unpaired,liu2017unsupervised,wang2018pix2pixHD,wang2018pix2pixHD,park2019SPADE}.
+Our work is built on the conditional GANs with image inputs, which aims to tackle image-to-image translation problems.
+
+\vspace*{2mm}\noindent {\bf Image-to-Image Translation.}
+Image-to-image translation is an umbrella concept that can be used to describe many problems in computer vision and computer graphics.
+As a milestone, Isola \etal~\cite{isola2016imagetoimage} first showed that image-conditional GANs can be used as a general solution to various image-to-image translation problems.
+Since then, their method is extended by several following works to scenarios including: unsupervised learning ~\cite{zhu2017unpaired,liu2017unsupervised}, few-shot learning ~\cite{liu2019fewshot}, high resolution image synthesis~\cite{wang2018pix2pixHD}, multi-modal image synthesis~\cite{zhu2017toward,huang2018multimodal} and multi-domain image synthesis~\cite{choi2017stargan}.
+Among various image-to-image translation problems, semantic image synthesis is a particularly useful genre as it enables easy user control by modifying the input semantic layout image~\cite{CelebAMask-HQ,Bau:Ganpaint:2019,gu2019maskguide,park2019SPADE}.
+To date, the SPADE~\cite{park2019SPADE} model (also called GauGAN) generates the highest quality results. In this paper, we will improve SPADE by introducing per-region style encoding.
+
+\vspace*{2mm}\noindent {\bf Style Encoding.}
+Style control is a vital component for various image synthesis and manipulation applications~\cite{GatysStyle2015,TextureSynthesis2016,Adain2017,karras2018stylebased,abdal2019image2stylegan}.
+\textit{Style} is generally not manually designed by a user, but extracted from reference images.
+In most existing methods, styles are encoded in three places: i) statistics of image features~\cite{GatysStyle2015,sendik2017deep}; 
+ii) neural network weights (\eg fast style transfer~\cite{johnson2016perceptual,zhou2018non,yang2019controllable});
+iii) parameters of a network normalization layer~\cite{Adain2017,Kotovenko2019disentangleStyle}).
+When applied to style control, the first encoding method is usually time-consuming as it requires a slow optimization process to match the statistics of image features extracted by image classification networks ~\cite{GatysStyle2015}. 
+The second approach runs in real-time but each neural network only encodes the style of selected reference images~\cite{johnson2016perceptual}.
+% For Style control, there is a new ICCV paper from Germany we should also cite.
+Thus, a separate neural network is required to be trained for each style image, which limits its application in practice.
+To date, the third approach is the best as it enables arbitrary style transfer in real-time~\cite{Adain2017} and it is used by high-quality networks such as StyleGAN~\cite{karras2018stylebased}, FUNIT~\cite{liu2019fewshot}, and SPADE~\cite{park2019SPADE}.
+Our per-region style encoding also builds on this approach. We will show that our method generates higher quality results and enables more-detailed user control.
+%-------------------------------------------------------------------------
+
+
+\section{Per Region Style Encoding and Control}
+
+Given an input style image and its corresponding segmentation mask, this section shows i) how to distill the per-region styles from the image according to the mask and ii) how to use the distilled per-region style codes to synthesize photo-realistic images.
+
+\subsection{How to Encode Style?}
+
+\vspace*{2mm}\noindent {\bf Per-Region Style Encoder.} To extract per region styles, we propose a novel style encoder network to distill the corresponding style code from each semantic region of an input image simultaneously (See the subnetwork \emph{Style Encoder} in Figure~\ref{fig:generator} (A)).
+The output of the style encoder is a $512 \times s$ dimensional style matrix $\mathbf{ST}$, where $s$ is the number of semantic regions in the input image. Each column of the matrix corresponds to the style code of a semantic region.
+Unlike the standard encoder built on a simple downscaling convolutional neural network, our per-region style encoder employs a ``bottleneck'' structure to remove the information irrelevant to styles from the input image.
+Incorporating the prior knowledge that styles should be independent of the shapes of semantic regions, we pass the intermediate feature maps ($512$ channels) generated by the network block \emph{TConv-Layers} through a region-wise average pooling layer and reduce them to a collection of $512$ dimensional vectors.
+As implementation detail we would like to remark that we use $s$ as the number of semantic labels in the data set and set columns corresponding to regions that do not exist in an input image to $0$. As a variation of this architecture, we can also extract style per region instance for datasets that have instance labels, e.g., CityScapes.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{Figures/SEAN.pdf}
+\caption{SEAN normalization. The input are style matrix $\mathbf{ST}$ and segmentation mask $\mathbf{M}$. In the upper part, the style codes in $\mathbf{ST}$ undergo a per style convolution and are then broadcast to their corresponding regions according to $\mathbf{M}$ to yield a style map. The style map is processed by conv layers to produce per pixel normalization values $\gamma^s$ and $\beta^s$. The lower part (light blue layers) creates per pixel normalization values using only the region information similar to SPADE.}
+\label{fig:SEAN normalization}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\linewidth]{Figures/Pipeline_SEANResBlk.pdf}
+\caption{SEAN generator. (A) On the left, the style encoder takes an input image and outputs a style matrix $\mathbf{ST}$. The generator on the right consists of interleaved SEAN ResBlocks and Upsampling layers. (B) A detailed view of a SEAN ResBlock used in (A).}
+\label{fig:generator}
+\end{figure*}
+
+
+
+\subsection{How to Control Style?}
+
+With per-region style codes and a segmentation mask as inputs, we propose a new conditional normalization technique called Semantic Region-Adaptive Normalization (SEAN) to enable detailed control of styles for photo-realistic image synthesis.
+Similar to existing normalization techniques~\cite{Adain2017,park2019SPADE}, SEAN works by modulating the scales and biases of generator activations.
+In contrast to all existing methods, the modulation parameters learnt by SEAN are dependent on both the style codes and segmentation masks.
+In a SEAN block (Figure~\ref{fig:SEAN normalization}), a style map is first generated by broadcasting the style codes to their corresponding semantic regions according to the input segmentation mask. 
+This style map along with the input segmentation mask are then passed through two separate convolutional neural networks to learn two sets of modulation parameters.
+The weighted sums of them are used as the final SEAN parameters to modulate the scales and biases of generator activations.
+The weight parameter is also learnable during training.
+The formal definition of SEAN is introduced as follows.
+
+
+% \noindent {\bf Semantic Region-Adaptive Normalization.} 
+\vspace*{2mm}\noindent {\bf Semantic Region-Adaptive Normalization (SEAN).}
+A SEAN block has two inputs: a style matrix $\mathbf{ST}$ encoding per-region style codes and a segmentation mask $\mathbf{M}$. 
+Let $\mathbf{h}$ denote the input activation of the current SEAN block in a deep convolutional network for a batch of $N$ samples. Let $H$, $W$ and $C$ be the height, width and the number of channels in the activation map.
+The modulated activation value at site $\left(n \in N, c \in C, y \in H, x \in W\right)$ is given by
+
+\begin{equation}
+\gamma_{c, y, x}(\mathbf{ST,M}) \frac{h_{n, c, y, x}-\mu_{c}}{\sigma_{c}}+\beta_{c, y, x}(\mathbf{ST,M})
+\label{eq:activation value}
+\end{equation}
+where $h_{n, c, y, x}$ is the activation at the site before normalization, the modulation parameters $\gamma_{c, y, x}$ and $\beta_{c, y, x}$ are weighted sums of $\gamma_{c, y, x}^{s}$, $\gamma_{c, y, x}^{o}$ and $\beta_{c, y, x}^{s}$, $\beta_{c, y, x}^{o}$ respectively (See Fig.~\ref{fig:SEAN normalization} for definition of $\gamma$ and $\beta$ variables):
+\begin {equation}
+\begin{split}
+\gamma_{c, y, x}(\mathbf{ST,M}) &= \alpha_{\gamma}\gamma_{c, y, x}^{s}(\mathbf{ST}) + (1-\alpha_{\gamma}) \gamma_{c, y, x}^{o}(\mathbf{M})\\
+\beta_{c, y, x}(\mathbf{ST,M}) &= \alpha_{\beta}\beta_{c, y, x}^{s}(\mathbf{ST}) + (1-\alpha_{\beta}) \beta_{c, y, x}^{o}(\mathbf{M})
+\label{eq: gamma beta calculation}
+\end{split}
+\end{equation}
+$\mu_{c}$ and $\sigma_{c}$ are the mean and standard deviation of the activation in channel $c$:
+\begin{equation}
+\mu_{c}=\frac{1}{N H W} \sum_{n, y, x} h_{n, c, y, x}
+\label{eq:mu equation}
+\end{equation}
+\begin{equation}
+\sigma_{c}=\sqrt{ \frac{1}{N H W} \left(\sum_{n, y, x}h_{n, c, y, x}^{2}\right) -\mu_{c}^{2}}
+\label{eq:sigma equation}
+\end{equation}
+
+
+\begin{table*}[thpb]
+\input{Tables/quantitative_table_similarity.tex}
+\caption{Quantitative comparison of reconstruction quality. Our method outperforms current leading methods using similarity metrics SSIM, RMSE, and PSNR on all the datasets. For SSIM and PSNR, higher is better. For RMSE, lower is better.} 
+\label{tab:similarity quantitative table}
+\end{table*}
+
+
+\begin{figure*}[th]
+\centering
+\includegraphics[width=\linewidth]{Figures/Interpolation2.jpg}
+\vspace*{-7mm}
+\caption{Style interpolation. We take a mask from a source image and reconstruct with two different style images (Style1 and Style2) that are very different from the source image. We then show interpolated results of the per-region style codes }
+\label{fig:style interpolation}
+\end{figure*}
+
+\begin{table*}[thpb]
+\input{Tables/quantitative_table_SSM2Image.tex}
+\caption{Quantitative comparison using semantic segmentation performance measured by mIoU and accu and generation performance measured by FID. Our method outperforms current leading methods in FID on all the datasets.} 
+\label{tab:SSM2Image quantitative table}
+\end{table*}
+
+\input{Images/Final_Rec.tex}
+
+
+
+
+\begin{figure*}[th]
+\centering
+\includegraphics[width=\linewidth]{Figures/crossover.jpg}
+\caption{Style crossover. In addition to style interpolation (bottom row), we can perform crossover by selecting different styles per ResBlk. We show two transitions in the top two rows. The blue / orange bars on top of the images indicate which styles are used by the six ResBlks. We can observe that earlier layers are responsible for larger features and later layers mainly determine the color scheme. 
+}
+\label{fig:style crossover}
+\end{figure*}
+
+
+%-------------------------------------------------------------------------
+\section{Experimental Setup}
+
+\subsection{Network Architecture}
+
+Figure \ref{fig:generator} (A) shows an overview of our generator network, which is building on that of SPADE~\cite{park2019SPADE}.
+Similar to~\cite{park2019SPADE}, we employ a generator consisting of several SEAN ResNet blocks (SEAN ResBlk) with upsampling layers.
+
+\vspace*{2mm}\noindent {\bf SEAN ResBlk.}
+Figure~\ref{fig:generator} (B) shows the structure of our SEAN ResBlk, which consists of three convolutional layers whose scales and biases are modulated by three SEAN blocks respectively. 
+Each SEAN block takes two inputs: a set of per-region style codes $\mathbf{ST}$ and a semantic mask $\mathbf{M}$.
+Note that both inputs are adjusted in the beginning: the input segmentation mask is downsampled to the same height and width of the feature maps in a layer; the input style codes from $\mathbf{ST}$ are transformed per region using a $1 \times 1$ conv layer $A_{ij}$.
+We observed that the initial transformations are indispensable components of the architecture because they transform the style codes according to the different roles of each neural network layer. 
+For example, early layers might control the hair styles (\eg wavy, straight) of human face images while later layers might refer to the lighting and color.
+In addition, we observed that adding noise to the input of SEAN can improve the quality of synthesized images.
+The scale of such noise is adjusted by a per-channel scaling factor $B$ that is learnt during training, similar to StyleGAN~\cite{karras2018stylebased}.
+
+
+\subsection{Training and Inference}
+
+\vspace*{2mm}\noindent {\bf Training} We formulate the training as an image reconstruction problem. That is, the style encoder is trained to distill per-region style codes from the input images according to their corresponding segmentation masks.
+The generator network is trained to reconstruct the input images with the extracted per-region style codes and the corresponding segmentation masks as inputs. 
+Following SPADE~\cite{park2019SPADE} and Pix2PixHD~\cite{wang2018pix2pixHD}, the difference between input images and reconstructed images are measured by an overall loss function consisting of three loss terms: conditional adversarial loss, feature matching loss~\cite{wang2018pix2pixHD} and perceptual loss~\cite{johnson2016perceptual}. 
+Details of the loss function are included in the supplementary material.
+
+
+\vspace*{2mm}\noindent {\bf Inference}
+During inference, we take an arbitrary segmentation mask as the mask input and implement per-region style control by selecting a separate $512$ dimensional style code for each semantic region as the style input.
+This enables a variety of high quality image synthesis applications, which will be introduced in the following section.
+
+
+\section{Results}
+
+In the following we discuss quantitative and qualitative results of our framework.
+
+\vspace*{2mm}\noindent {\bf Implementation details.} Following SPADE~\cite{park2019SPADE}, we apply Spectral Norm~\cite{miyato2018spectral} in both the generator and discriminator. Additional normalization is performed by SEAN in the generator. We set the learning rates to $0.0001$ and $0.0004$ for the generator and discriminator, respectively~\cite{heusel2017gans}. For the optimizer, we choose ADAM~\cite{kingma2014adam} with $\beta_{1}=0, \beta_{2}=0.999$. All the experiments are trained on $4$ Tesla v100 GPUs. To get better performance, we use a synchronized version of batch normalization~\cite{Zhang_2018_CVPR} in the SEAN normalization blocks.
+
+\vspace*{2mm}\noindent {\bf Datasets.} We use the following datasets in our experiments: 1) CelebAMask-HQ~\cite{CelebAMask-HQ,karras2017progressive,liu2015faceattributes} containing $30,000$ segmentation masks for the CelebAHQ face image dataset. There are 19 different region categories.
+2) ADE20K~\cite{zhou2017scene} contains $22,210$ images annotated with 150 different region labels.
+3) Cityscapes~\cite{Cordts2016Cityscapes} contains 3500 images annotated with 35 different region labels. 
+4) \Facades dataset. we use a dataset of $30,000$ \facade images collected from Google Street View~\cite{anguelov2010google}.  Instead of manual annotation, the segmentation masks are automatically calculated by a pre-trained DeepLabV3+ Network~\cite{chen2018encoderdecoder}.
+
+We follow the recommended splits for each dataset and note that all images in the paper are generated from the test set only. Neither the segmentation masks nor the style images have been seen during training.
+
+
+
+\begin{table}[hpb]
+\input{Tables/ablation_study}
+\caption{Ablation study on CelebAMask-HQ dataset. See supplementary materials for further details.} 
+\label{tab:ablation study table}
+\end{table}
+
+
+\vspace*{2mm}\noindent {\bf Metrics.} We employ the following established metrics to compare our results to state of the art: 1) segmentation accuracy measured by \ac{mIoU} and \ac{accu}, 2) FID~\cite{heusel2017gans}, 3) peak signal-to-noise ratio (PSNR), 4) structural similarity (SSIM)~\cite{Wang04imagequality}, 5) root mean square error (RMSE).
+
+\vspace*{2mm}\noindent {\bf Quantitative comparisons.} 
+In order to facilitate a fair comparison to SPADE, we report reconstruction performance where only a single style image is employed.
+We train one network for each of the four datasets and report the previously described metrics in Table~\ref{tab:similarity quantitative table} and~\ref{tab:SSM2Image quantitative table}. We choose SPADE~\cite{park2019SPADE} as the currently best state-of-the-art method and Pix2PixHD~\cite{wang2018pix2pixHD} as the second best method in the comparisons. Based on visual inspection of the results, we found that the FID score is most indicative of visual quality of the results and that a lower FID score often (but not always) corresponds to better visual results. Generally, we can observe that our SEAN framework clearly beats the state of the art on all datasets.
+
+\vspace*{2mm}\noindent {\bf Qualitative results.}
+We show visual comparisons for the four datasets in Fig.~\ref{fig:Reconstruction results}. We can observe that the quality difference between our work and the state of the art can be significant. For example, we notice that SPADE and Pix2Pix cannot handle more extreme poses and older people. We conjecture that our network is more suitable to learn more of the variability in the data because of our improved style encoding.
+Since a visual inspection of the results is very important for generative modeling, we would like to refer the reader to the supplementary materials and the accompanying video for more results. Our per-region style encoding also enables new image editing operations: iterative image editing with per-region style control (See Figs.~\ref{fig:teaser} and \ref{fig:ADE editing}), style interpolation and style crossover (See Fig.~\ref{fig:style interpolation} and \ref{fig:style crossover}).
+
+\vspace*{2mm}\noindent {\bf Variations of SEAN generator (Ablation studies).}
+In Table~\ref{tab:ablation study table}, we compare many variations of our architecture with previous work on the CelebAMask-HQ dataset.
+
+According to our analysis, Pix2PixHD has a better style extraction subnetwork than SPADE (because the PSNR reconstruction values are better), but SPADE has a better generator subnetwork (because the FID scores are better). We therefore build another network that combines the style encoder from Pix2PixHD with the generator from SPADE and call this architecture SPADE++. We can observe that SPADE++ improves SPADE by a bit, but all our architecture variations still have a better FID and PSNR score.
+
+To evaluate our design choices, we report the performance of variations of our encoder. First we compare three variants to encode style: SEAN-level encoder, ResBlk-level encoder, and unified encoder.
+A fundamental design choice is how to split the style computation into two parts: a shared computation in the style encoder and a per layer computation in each SEAN block.
+The first two variants perform all style extraction per-layer, while the unified encoder is the architecture described in the main part of the paper.
+While the other two encoders have better reconstruction performance, they lead to lower FID scores. 
+Based on visual inspection, we also confirmed that the unified encoder leads to better visual quality. This is especially noticeable for difficult inputs (see supplementary materials).
+Second, we evaluate if downsampling in the style encoder is a good idea and evaluate a style encoder with bottleneck (with downsampling) with another encoder that uses less downsampling. This test confirms that introducing a bottleneck in the style encoder is a good idea. Lastly, we test the effect of the learnable noise. We found the learnable noise can help both similarity (PSNR) and FID performance. More details of the alternative architectures are provided in supplementary materials. 
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+
+
+\section{Conclusion}
+
+We propose semantic region-adaptive normalization (SEAN), a simple but effective building block for Generative Adversarial Networks (GANs) conditioned on segmentation masks that describe the semantic regions in the desired output image.
+Our main idea is to extend SPADE, the currently best network, to control the style of each semantic region individually, e.g. we can specify one style reference image per semantic region. We introduce a new building block, SEAN normalization, that can extract style from a given style image for a semantic region and processes the style information to bring it in the form of spatially-varying normalization parameters.
+We evaluate SEAN on multiple datasets and report better quantitative metrics (e.g. FID, PSNR) than the current state of the art.
+While SEAN is designed to specify style for each region independently, we also achieve big improvements in the basic setting where only one style image is provided for all regions.
+In summary, SEAN is better suited to encode, transfer, and synthesize style than the best previous method in terms of reconstruction quality, variability, and visual quality. SEAN also pushes the frontier of interactive image editing. In future work, we plan to extend SEAN to processing meshes, point clouds, and textures on surfaces.
+
+\textbf{Acknowledgement} This work was supported by the KAUST Office of Sponsored Research (OSR) under Award No. OSR-CRG2018-3730.
+
+%-------------------------------------------------------------------------
+
+% \clearpage
+% \newpage
+{\small
+\bibliographystyle{ieee_fullname}
+\bibliography{egbib}
+}
+\clearpage
+\end{document}
+
+
+

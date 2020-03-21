@@ -1,0 +1,25 @@
+jpg\addtolength{\tabcolsep}{-4.5pt}    
+% \setlength{\mywidth}{0.1932\textwidth}
+\bgroup
+\def\arraystretch{0.5}%  1 is the default. Controls vertical spacing.
+\begin{figure*}[]
+\begin{tabular} {cc|cc|c}
+ Label & Ground Truth & Pix2PixHD~\cite{wang2018pix2pixHD} &  SPADE~\cite{park2019SPADE} & Ours\\
+\includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/label/munster_000017_000019_leftImg8bit.png} & \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/gt/munster_000017_000019_leftImg8bit.jpg} &
+\includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/pix2pixhd/munster_000017_000019_leftImg8bit.jpg} &   \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/spade/munster_000017_000019_leftImg8bit.jpg} &  \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/ours/munster_000017_000019_leftImg8bit.png} \\
+ 
+% \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/label/frankfurt_000000_022254_leftImg8bit.png} & \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/gt/frankfurt_000000_022254_leftImg8bit.png} &
+% \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/pix2pixhd/frankfurt_000000_022254_leftImg8bit.png} &   \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/spade/frankfurt_000000_022254_leftImg8bit.png} &  \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/ours/frankfurt_000000_022254_leftImg8bit.png} \\
+
+\includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/label/frankfurt_000001_044787_leftImg8bit.png} & \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/gt/frankfurt_000001_044787_leftImg8bit.jpg} &
+\includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/pix2pixhd/frankfurt_000001_044787_leftImg8bit.jpg} &   \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/spade/frankfurt_000001_044787_leftImg8bit.jpg} &  \includegraphics[width=0.1932\textwidth]{Images/Rec/CityScape/ours/frankfurt_000001_044787_leftImg8bit.png} \\
+
+
+\end{tabular}
+\vspace{-2mm}
+	\caption{Visual  comparison  of  semantic  image  synthesis  results  on  the  CityScapes dataset. We compare Pix2PixHD, SPADE, and our method.}
+	\label{fig:CityScape results}	
+\vspace{-3mm}	
+ \end{figure*}
+ \egroup
+ \addtolength{\tabcolsep}{4.5pt}

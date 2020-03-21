@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+
+<!-- === Header Starts === -->
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <title>SEAN</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js"></script>
+  <link href="./assets/bootstrap.min.css" rel="stylesheet">
+  <link href="./assets/font.css" rel="stylesheet" type="text/css">
+  <link href="./assets/style.css" rel="stylesheet" type="text/css">
+</head>
+<!-- === Header Ends === -->
+
+
+<body>
+
+
+<!-- === Home Section Starts === -->
+<div class="container">
+  <div class="title" style="margin: 20pt auto;font-size: 24pt;">
+    SEAN: Image Synthesis with Semantic Region-Adaptive Normalization
+  </div>
+  <div class="oral">
+    CVPR 2020 Oral Presentation
+  </div>
+  <div class="author">
+    <a href="" target="_blank">Peihao Zhu</a><sup>1</sup>&nbsp;
+    <a href="" target="_blank">Rameen Abdal</a><sup>1</sup>&nbsp;
+    <a href="https://www.cardiff.ac.uk/people/view/1508897-qin-yipeng" target="_blank">Yipeng Qin</a><sup>2</sup>&nbsp;
+    <a href="http://peterwonka.net/" target="_blank">Peter Wonka</a><sup>1</sup>&nbsp;
+  </div>
+  <div class="institution">
+    <sup>1</sup>KAUST <br>
+    <sup>2</sup>Cardiff University
+  </div>
+  <div class="link">
+    <a href="https://arxiv.org/pdf/1911.12861.pdf" target="_blank">[Paper]</a>&nbsp;
+    <a href="https://github.com/ZPdesu/SEAN" target="_blank">[Code]</a>
+    <a href="https://youtu.be/0Vbj9xFgoUw" target="_blank">[Video]</a>
+    <a href="https://github.com/ZPdesu/lsaa-dataset" target="_blank">[Data]</a>
+    <a href="./assets/bibtex.txt" target="_blank">[Bibtex]</a>
+
+  </div>
+  <div class="teaser">
+    <img src="./assets/Teaser.png">
+  </div>
+  <div class="body">
+  Face image editing controlled via style images and segmentation masks.
+   a) source images. b) reconstruction of the source image; segmentation mask shown as small inset. c - f) four separate edits;
+   we show the image that provides new style information on top and show the part of the segmentation mask that gets edited as small inset.
+  The results of the successive edits are shown in row two and three. The four edits change hair, mouth and eyes, skin tone, and background, respectively.
+  </div>
+</div>
+<!-- === Home Section Ends === -->
+
+
+<!--====== Overview Section Starts ======-->
+<div class="container">
+  <div class="title">Abstract</div>
+  <div class="body">
+    We propose semantic region-adaptive normalization (<b>SEAN</b>), a simple but effective building block for Generative Adversarial Networks conditioned on segmentation masks that describe the semantic regions in the desired output image.
+    Using SEAN normalization, we can build a network architecture that can control the style of each semantic region individually, e.g., we can specify one style reference image per region. SEAN is better suited to encode, transfer, and synthesize style than the best previous method in terms of reconstruction quality, variability, and visual quality.
+    We evaluate SEAN on multiple datasets and report better quantitative metrics (e.g. FID, PSNR) than the current state of the art.
+    SEAN also pushes the frontier of interactive image editing. We can interactively edit images by changing segmentation masks or the style for any given region. We can also interpolate styles from two reference images per region.
+  </div>
+</div>
+<!--====== Overview Section Ends ======-->
+
+
+<!--====== Video Section Starts ======-->
+<div class="container">
+  <div class="title">Overview Video</div>
+  <div style="text-align: center;">
+    <iframe width="960" height="540" src="https://www.youtube.com/embed/0Vbj9xFgoUw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </div>
+
+
+</div>
+<!--====== Video Section Ends ======-->
+
+
+
+
+<!--====== Architecture Section Starts ======-->
+<div class="container">
+  <div class="title">Network Architecture</div>
+
+  <div class="teaser">
+    <img src="./assets/Pipeline.png"  style="width: 80%">
+  </div>
+  <div class="body">
+    SEAN generator. (A) On the left, the style encoder takes an input image and outputs a style matrix \(\mathbf{ST}\).
+    The generator on the right consists of interleaved SEAN ResBlocks and Upsampling layers. (B) A detailed view of a SEAN ResBlock used in (A).
+  </div>
+  <div class="teaser">
+    <img src="./assets/SEAN.png" style="width: 50%">
+  </div>
+  <div class="body">
+    SEAN normalization. The input are style matrix \(\mathbf{ST}\) and segmentation mask \(\mathbf{M}\).
+    In the upper part, the style codes in \(\mathbf{ST}\) undergo a per style convolution and are then broadcast to their corresponding regions according to \(\mathbf{M}\) to yield a style map.
+     The style map is processed by conv layers to produce per pixel normalization values \(\gamma^s\) and \(\beta^s\).
+     The lower part (light blue layers) creates per pixel normalization values using only the region information similar to SPADE.
+  </div>
+  </div>
+</div>
+<!--====== Architecture Section Ends ======-->
+
+
+<!--====== Results Section Starts ======-->
+<div class="container">
+  <div class="title">Results and Applications</div>
+  <div class="results">1. Image Reconstruction</div>
+  <div class="teaser">
+    <img src="./assets/Rec.png" style="width: 85%">
+  </div>
+  <div class="body">
+  Visual  comparison  of  semantic  image  synthesis  results  on  the  CelebAMask-HQ, ADE20K, CityScapes and
+  Facades dataset. We compare Pix2PixHD, SPADE, and our method.
+  </div>
+
+  <div class="results">2. Image Editing</div>
+  <div class="teaser">
+    <img src="./assets/Image_editing.png" style="width: 85%">
+  </div>
+  <div class="body">
+  Editing sequence on the ADE20K dataset.  (a) source image, (b) reconstruction of the source image,
+  (c-f) variousedits using style images shown in the top row. The regions affected by the edits are shown as small insets.
+  </div>
+
+
+  <div class="results">3. Style Transfer</div>
+  <div class="teaser">
+    <img src="./assets/Style_transfer.png" style="width: 85%">
+  </div>
+  <div class="body">
+  Style transfer on CelebAMask-HQ dataset.
+  </div>
+
+  <div class="results">4. Style interpolation & Style Crossover</div>
+  <div class="teaser">
+    <img src="./assets/Interpolation.jpg" style="width: 85%">
+  </div>
+  <div class="body">
+  Style interpolation.  We take a mask from a source image and reconstruct with two different style images (Style1and Style2)
+   that are very different from the source image. We then show interpolated results of the per-region style codes.
+  </div>
+  <div class="teaser">
+    <img src="./assets/crossover.jpg" style="width: 85%">
+  </div>
+  <div class="body">
+  Style crossover.  In addition to style interpolation (bottom row), we can perform crossover by selecting differentstyles per ResBlk. We show two transitions in the top two rows.
+   The blue / orange bars on top of the images indicate whichstyles are used by the six ResBlks.
+   We can observe that earlier layers are responsible for larger features and later layersmainly determine the color scheme.
+  </div>
+
+
+
+
+</div>
+<!--====== Results Section Ends ======-->
+
+
+<!--====== Bibtex Section Starts ======-->
+<div class="container">
+  <div class="bibtex">Bibtex</div>
+<pre>
+  @misc{zhu2019sean,
+    title={SEAN: Image Synthesis with Semantic Region-Adaptive Normalization},
+    author={Peihao Zhu and Rameen Abdal and Yipeng Qin and Peter Wonka},
+    year={2019},
+    eprint={1911.12861},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
+</pre>
+</div>
+
+<!--====== Bibtex Section Ends ======-->
+
+
+<!--====== Bibtex Section Starts ======-->
+<div class="container">
+  <div class="acknowledgement">Acknowledgement</div>
+  <div class="body" style="font-size: 11pt;;">
+    We thank Wamiq Reyaz Para for helpful comments. This  work  was  supported  by  the KAUST Office of Sponsored Research (OSR) under AwardNo. OSR-CRG2018-3730.
+  </div>
+
+</div>
+
+<!--====== Bibtex Section Ends ======-->
+
+
+
+
+<!--====== References Section Starts ======-->
+
+<div class="container">
+  <div class="ref">Related Work</div>
+  <div class="citation">
+    <img src="./assets/SPADE.png">
+    <a href="https://nvlabs.github.io/SPADE/">
+      Taesung Park, Ming-Yu Liu, Ting-Chun Wang, and Jun-YanZhu.
+      Semantic image synthesis with spatially-adaptive nor-malization.
+      CVPR, 2019.
+    </a>
+  </div>
+  <div class="citation">
+    <img src="./assets/styleGAN.png">
+    <a href="https://github.com/NVlabs/stylegan">
+      Tero Karras, Samuli Laine, Timo Aila.
+      A Style-Based Generator Architecture for Generative Adversarial Networks
+      CVPR, 2019.
+    </a>
+  </div>
+  <div class="citation">
+    <img src="./assets/Pix2PixHD.png">
+    <a href="https://tcwang0509.github.io/pix2pixHD/">
+      Ting-Chun Wang, Ming-Yu Liu, Jun-Yan Zhu, Andrew Tao, Jan Kautz, and Bryan Catanzaro.
+      High-Resolution Image Synthesis and Semantic Manipulation with Conditional GANs.
+      CVPR, 2018.
+    </a>
+  </div>
+
+
+<!--====== References Section Ends ======-->
+
+
+</body>
+</html>

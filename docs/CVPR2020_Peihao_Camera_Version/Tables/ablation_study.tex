@@ -1,0 +1,19 @@
+\centering
+\small
+\begin{tabular}{lcccc} \toprule
+
+Method                          &SSIM    &RMSE  &PSNR    &FID \\ \midrule
+                       
+Pix2PixHD~\cite{wang2018pix2pixHD}                       &0.68   &0.15   &17.14   &23.69\\
+SPADE~\cite{park2019SPADE}                           &0.63   &0.21   &14.30   &22.43\\
+SPADE++                         &0.67   &0.16   &16.71   &20.80\\ \midrule
+SEAN-level encoders    &0.74   &0.11   &19.70   &18.17\\
+ResBlk-level encoders           &0.72   &0.12   &18.86   &17.98\\
+\bf{unified encoder}        &0.73   &0.12   &18.74   &17.66\\ \midrule
+\bf{w/ downsampling}&0.73   &0.12   &18.74   &17.66\\ 
+w/o downsampling        &0.72   &0.13   &18.32   &18.67\\ \midrule
+\bf{w/ noises}              &0.73   &0.12   &18.74   &17.66\\
+w/o noises                      &0.72   &0.13   &18.49   &18.05\\
+\bottomrule
+
+\end{tabular}
