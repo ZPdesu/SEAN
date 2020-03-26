@@ -20,9 +20,26 @@ We propose semantic region-adaptive normalization (SEAN), a simple but effective
 
 
 ## Installation
-### Code will be uploaded within this week
+
+Clone this repo.
+```bash
+git clone https://github.com/ZPdesu/SEAN.git
+cd SEAN/
+```
+
+This code requires PyTorch, python 3+ and Pyqt5. Please install dependencies by
+```bash
+pip install -r requirements.txt
+```
+
+This model requires a lot of memory and time to train. To speed up training, we recommend using 4 V100 GPUs
+
+
+
 
 ## Dataset Preparation
+
+### Will be updated in this week.
 
 ## Pretrained Models
 
