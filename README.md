@@ -83,7 +83,7 @@ If you only have single GPU with small memory, please use `--batchSize 2 --gpu_i
 
 We provide a convenient UI for the users to do some extension works. To run the UI mode, you need to:
 
-1. run the step **Generating Images Using Pretrained Models** to save the style codes of the test images and the mean style codes. Or you can directly download the style codes from [here](https://drive.google.com/file/d/153U5q_CfwPM0V4wRP199BhD9niUuVW95/view?usp=sharing).`
+1. run the step **Generating Images Using Pretrained Models** to save the style codes of the test images and the mean style codes. Or you can directly download the style codes from [here](https://drive.google.com/file/d/153U5q_CfwPM0V4wRP199BhD9niUuVW95/view?usp=sharing).
 
 2. Put the visualization images of the labels used for generating in `./imgs/colormaps` and the style images in `./imgs/style_imgs_test`. Some example images are provided in these 2 folders. Note: the visualization image and the style image should be picked from `./datasets/CelebAMask-HQ/test/vis` and `./datasets/CelebAMask-HQ/test/labels`, because only the style codes of the test images are saved in `./styles_test/style_codes/`. If you want to use your own images, please prepare the images, labels and visualization of the labels in `datasets/CelebAMask-HQ/test` with the same format, and calculate the corresponding style codes.
  
@@ -92,7 +92,7 @@ We provide a convenient UI for the users to do some extension works. To run the 
     ```bash
     python run_UI.py --name CelebA-HQ_pretrained --load_size 256 --crop_size 256 --dataset_mode custom --label_dir datasets/CelebA-HQ/test/labels --image_dir datasets/CelebA-HQ/test/images --label_nc 19 --no_instance --gpu_ids 0
     ```
-4. How to use the UI. Please check the detail usage of the UI from our [Video](https://youtu.be/0Vbj9xFgoUw). 
+4. How to use the UI. Please check the detail usage of the UI from our [Video](https://youtu.be/0Vbj9xFgoUw).
 
 	![image](./docs/assets/UI.png)
 
