@@ -92,9 +92,12 @@ We provide a convenient UI for the users to do some extension works. To run the 
     ```bash
     python run_UI.py --name CelebA-HQ_pretrained --load_size 256 --crop_size 256 --dataset_mode custom --label_dir datasets/CelebA-HQ/test/labels --image_dir datasets/CelebA-HQ/test/images --label_nc 19 --no_instance --gpu_ids 0
     ```
-4. How the UI look like. Please check the detail usage of the UI from our [Video](https://youtu.be/0Vbj9xFgoUw). 
+4. How to use the UI. Please check the detail usage of the UI from our [Video](https://youtu.be/0Vbj9xFgoUw). 
 
 	![image](./docs/assets/UI.png)
+
+## Other Datasets
+Will be released soon.
 
 ## License
 
