@@ -1,6 +1,6 @@
 .idea/
 .DS_Store
-checkpoints/CelebA-HQ/
+checkpoints/
 ui_results/
 results/
 styles_test/mean_style_code/
