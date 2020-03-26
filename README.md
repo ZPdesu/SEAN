@@ -37,7 +37,7 @@ This model requires a lot of memory and time to train. To speed up the training,
 
 ## Dataset Preparation
 
-This code uses [CelebA-HQ](https://github.com/tkarras/progressive_growing_of_gans) and [CelebAMask-HQ](https://github.com/switchablenorms/CelebAMask-HQ) dataset. The prepared dataset can be directly downloaded [here](https://drive.google.com/file/d/1TKhN9kDvJEcpbIarwsd1_fsTR2vGx6LC/view?usp=sharing). After unzipping, put the entire CelebA-HQ folder in the datasets folder. The complete directory should look like `datasets/CelebA-HQ/train` and `datasets/CelebA-HQ/test`.
+This code uses [CelebA-HQ](https://github.com/tkarras/progressive_growing_of_gans) and [CelebAMask-HQ](https://github.com/switchablenorms/CelebAMask-HQ) dataset. The prepared dataset can be directly downloaded [here](https://drive.google.com/file/d/1TKhN9kDvJEcpbIarwsd1_fsTR2vGx6LC/view?usp=sharing). After unzipping, put the entire CelebA-HQ folder in the datasets folder. The complete directory should look like `datasets/CelebA-HQ/train/` and `datasets/CelebA-HQ/test/`.
 
 
 ## Generating Images Using Pretrained Models
@@ -45,7 +45,7 @@ This code uses [CelebA-HQ](https://github.com/tkarras/progressive_growing_of_gan
 Once the dataset is prepared, the reconstruction results be got using pretrained models.
 
 
-1. Create `./checkpoints` in the main folder and download the tar of the pretrained models from the [Google Drive Folder](https://drive.google.com/file/d/1UMgKGdVqlulfgOBV4Z0ajEwPdgt3_EDK/view?usp=sharing). Save the tar in `./checkpoints`, then run
+1. Create `./checkpoints/` in the main folder and download the tar of the pretrained models from the [Google Drive Folder](https://drive.google.com/file/d/1UMgKGdVqlulfgOBV4Z0ajEwPdgt3_EDK/view?usp=sharing). Save the tar in `./checkpoints/`, then run
 
     ```
     cd checkpoints
@@ -85,8 +85,8 @@ We provide a convenient UI for the users to do some extension works. To run the 
 
 1. run the step **Generating Images Using Pretrained Models** to save the style codes of the test images and the mean style codes. Or you can directly download the style codes from [here](https://drive.google.com/file/d/153U5q_CfwPM0V4wRP199BhD9niUuVW95/view?usp=sharing).
 
-2. Put the visualization images of the labels used for generating in `./imgs/colormaps` and the style images in `./imgs/style_imgs_test`. Some example images are provided in these 2 folders. Note: the visualization image and the style image should be picked from `./datasets/CelebAMask-HQ/test/vis` and `./datasets/CelebAMask-HQ/test/labels`, because only the style codes of the test images are saved in `./styles_test/style_codes/`. If you want to use your own images, please prepare the images, labels and visualization of the labels in `datasets/CelebAMask-HQ/test` with the same format, and calculate the corresponding style codes.
- 
+2. Put the visualization images of the labels used for generating in `./imgs/colormaps/` and the style images in `./imgs/style_imgs_test/`. Some example images are provided in these 2 folders. Note: the visualization image and the style image should be picked from `./datasets/CelebAMask-HQ/test/vis/` and `./datasets/CelebAMask-HQ/test/labels/`, because only the style codes of the test images are saved in `./styles_test/style_codes/`. If you want to use your own images, please prepare the images, labels and visualization of the labels in `datasets/CelebAMask-HQ/test/` with the same format, and calculate the corresponding style codes.
+
 3. Run the UI mode
 
     ```bash
