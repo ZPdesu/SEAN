@@ -94,7 +94,7 @@ We provide a convenient UI for the users to do some extension works. To run the 
     ```
 4. How to use the UI. Please check the detail usage of the UI from our [Video](https://youtu.be/0Vbj9xFgoUw).
 
-	![image](./docs/assets/UI.png)
+	![image](./docs/assets/UI.png)[https://youtu.be/0Vbj9xFgoUw]
 
 ## Other Datasets
 Will be released soon.
