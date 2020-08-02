@@ -106,13 +106,12 @@ All rights reserved. Licensed under the [CC BY-NC-SA 4.0](https://creativecommon
 ## Citation
 If you use this code for your research, please cite our papers.
 ```
-@misc{zhu2019sean,
-    title={SEAN: Image Synthesis with Semantic Region-Adaptive Normalization},
-    author={Peihao Zhu and Rameen Abdal and Yipeng Qin and Peter Wonka},
-    year={2019},
-    eprint={1911.12861},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV}
+@InProceedings{Zhu_2020_CVPR,
+author = {Zhu, Peihao and Abdal, Rameen and Qin, Yipeng and Wonka, Peter},
+title = {SEAN: Image Synthesis With Semantic Region-Adaptive Normalization},
+booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+month = {June},
+year = {2020}
 }
 ```
 
