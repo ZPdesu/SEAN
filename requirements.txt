@@ -15,6 +15,6 @@ qdarkgraystyle==1.0.2
 tensorboard==1.14.0
 tensorboardX==1.9
 tqdm==4.32.1
-urllib3==1.25.8
+urllib3==1.26.5
 visdom==0.1.8.9
 
